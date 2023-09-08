@@ -199,6 +199,7 @@ namespace GuardPages
             }
             Console.WriteLine("[+] Function handler_function's address: 0x{0}", hookPtr.ToString("X"));
             AddVectoredExceptionHandler((uint)1, hookPtr);
+            
             Console.WriteLine("\n[+] Calling {0}...", func_name);
             CloseWindowStation(IntPtr.Zero);
         }
