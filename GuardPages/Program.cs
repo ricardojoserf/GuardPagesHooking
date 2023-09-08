@@ -15,6 +15,8 @@ namespace GuardPages
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, int dwSize, out IntPtr lpNumberOfBytesRead);
         [DllImport("User32.dll")] public static extern int MessageBox(int h, string m, string c, int type);
 
+        [return: MarshalAs(UnmanagedType.Bool)] [DllImport("user32", CharSet = CharSet.Unicode, SetLastError = true)] public static extern bool CloseWindowStation(IntPtr hWinsta);
+
         const int PAGE_EXECUTE_READ = 0x20;
         const int PAGE_GUARD = 0x100;
         const uint STATUS_GUARD_PAGE_VIOLATION = 2147483649; // Exception code = 0x80000001
@@ -167,8 +169,10 @@ namespace GuardPages
             if (ExceptionInfo.exceptionRecord.ExceptionCode == STATUS_GUARD_PAGE_VIOLATION)
             {
                 //printDebugInfo(ExceptionInfo);
-                Console.WriteLine("[+] Captured exception with exception code:\t0x{0}", ExceptionInfo.exceptionRecord.ExceptionCode.ToString("X"));
-                Console.WriteLine("[+] The call was hooked, execute any code in here.");
+                Console.WriteLine("[+] Captured exception with exception code: 0x{0}", ExceptionInfo.exceptionRecord.ExceptionCode.ToString("X"));
+                Console.WriteLine("[+] The call was hooked.");
+                // Execute any code in here
+                MessageBox(0, "This call was hooked.", "Hooking Test", 0);
                 return EXCEPTION_CONTINUE_EXECUTION;
             }
             return EXCEPTION_CONTINUE_SEARCH;
@@ -178,7 +182,7 @@ namespace GuardPages
         static void Main(string[] args)
         {
             String dll_name =  "User32.dll";
-            String func_name = "MessageBoxA";
+            String func_name = "CloseWindowStation";
 
             Console.WriteLine("[+] Setting Page Guard...");
             IntPtr dll_handle = GetModuleHandle(dll_name);
@@ -186,7 +190,7 @@ namespace GuardPages
             
             bool vp = VirtualProtectEx(GetCurrentProcess(), func_address, (UIntPtr) 1, PAGE_EXECUTE_READ | PAGE_GUARD, out _);
             if (vp) {
-                Console.WriteLine("[+] Guard Page set in address: \t\t\t0x{0} ({1}.{2})", func_address.ToString("X"), dll_name, func_name);
+                Console.WriteLine("[+] Guard Page set in address: 0x{0} ({1} in {2})", func_address.ToString("X"), func_name, dll_name);
             }
 
             IntPtr hookPtr = IntPtr.Zero;
@@ -194,10 +198,10 @@ namespace GuardPages
                 var aux_hook = new hookDel(handler_function);
                 hookPtr = Marshal.GetFunctionPointerForDelegate(aux_hook);
             }
-            Console.WriteLine("[+] Function handler_function address: \t\t0x{0}", hookPtr.ToString("X"));
+            Console.WriteLine("[+] Function handler_function's address: 0x{0}", hookPtr.ToString("X"));
             AddVectoredExceptionHandler((uint)1, hookPtr);
             Console.WriteLine("\n[+] Calling MessageBoxA...");
-            MessageBox(0, "This call was hooked.", "Hook Test", 0);
+            CloseWindowStation(IntPtr.Zero);
         }
     }
 }
