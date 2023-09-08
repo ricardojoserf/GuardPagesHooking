@@ -14,7 +14,6 @@ namespace GuardPages
         [DllImport("kernel32.dll")] public static extern IntPtr AddVectoredExceptionHandler(uint FirstHandler, IntPtr VectoredHandler_POINTER);
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, int dwSize, out IntPtr lpNumberOfBytesRead);
         [DllImport("User32.dll")] public static extern int MessageBox(int h, string m, string c, int type);
-
         [return: MarshalAs(UnmanagedType.Bool)] [DllImport("user32", CharSet = CharSet.Unicode, SetLastError = true)] public static extern bool CloseWindowStation(IntPtr hWinsta);
 
         const int PAGE_EXECUTE_READ = 0x20;
@@ -200,7 +199,7 @@ namespace GuardPages
             }
             Console.WriteLine("[+] Function handler_function's address: 0x{0}", hookPtr.ToString("X"));
             AddVectoredExceptionHandler((uint)1, hookPtr);
-            Console.WriteLine("\n[+] Calling MessageBoxA...");
+            Console.WriteLine("\n[+] Calling {0}...", func_name);
             CloseWindowStation(IntPtr.Zero);
         }
     }
