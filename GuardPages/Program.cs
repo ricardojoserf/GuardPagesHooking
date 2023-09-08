@@ -169,7 +169,7 @@ namespace GuardPages
             {
                 //printDebugInfo(ExceptionInfo);
                 Console.WriteLine("[+] Captured exception with exception code: 0x{0}", ExceptionInfo.exceptionRecord.ExceptionCode.ToString("X"));
-                Console.WriteLine("[+] The call was hooked.");
+                Console.WriteLine("[+] The call was successfully hooked.");
                 // Execute any code in here
                 MessageBox(0, "This call was hooked.", "Hooking Test", 0);
                 return EXCEPTION_CONTINUE_EXECUTION;
@@ -192,15 +192,24 @@ namespace GuardPages
                 Console.WriteLine("[+] Guard Page set in address: 0x{0} ({1} in {2})", func_address.ToString("X"), func_name, dll_name);
             }
 
+            Console.WriteLine("\n[+] Adding exception handler...");
             IntPtr hookPtr = IntPtr.Zero;
             unsafe {
                 var aux_hook = new hookDel(handler_function);
                 hookPtr = Marshal.GetFunctionPointerForDelegate(aux_hook);
             }
             Console.WriteLine("[+] Function handler_function's address: 0x{0}", hookPtr.ToString("X"));
-            AddVectoredExceptionHandler((uint)1, hookPtr);
             
-            Console.WriteLine("\n[+] Calling {0}...", func_name);
+            IntPtr add_exception = AddVectoredExceptionHandler((uint)1, hookPtr);
+            if (add_exception == IntPtr.Zero)
+            {
+                Console.WriteLine("[-] Error adding exception handler.");
+            }
+            else
+            {
+                Console.WriteLine("[+] Exception handler added correctly.");
+            }
+            Console.WriteLine("\n[+] Calling hooked function {0}...", func_name);
             CloseWindowStation(IntPtr.Zero);
         }
     }
