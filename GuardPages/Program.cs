@@ -21,7 +21,6 @@ namespace GuardPages
         const uint STATUS_GUARD_PAGE_VIOLATION = 2147483649; // Exception code = 0x80000001
         const long EXCEPTION_CONTINUE_EXECUTION = -1;
         const long EXCEPTION_CONTINUE_SEARCH = 0;
-        const long EXCEPTION_EXECUTE_HANDLER = 1;
 
         public delegate long hookDel(IntPtr ExceptionInfo_Pointer);
         public delegate void testDel();
@@ -31,7 +30,6 @@ namespace GuardPages
         {
             public EXCEPTION_RECORD exceptionRecord;
             public CONTEXT contextRecord;
-
         }
 
         // Source: https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-exception_record
@@ -93,7 +91,7 @@ namespace GuardPages
         };
 
 
-        private static T MarshalBytesTo<T>(byte[] bytes)
+        static T MarshalBytesTo<T>(byte[] bytes)
         {
             GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
             T theStructure = (T)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T));
